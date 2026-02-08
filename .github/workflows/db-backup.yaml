@@ -1,0 +1,78 @@
+name: Database Backup (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      backup-path:
+        required: true
+        type: string
+      cron-slot:
+        required: false
+        type: string
+        default: auto
+    secrets:
+      DB_HOST:
+        required: true
+      DB_USER:
+        required: true
+      DB_PASSWORD:
+        required: true
+      DB_NAME:
+        required: true
+      FTP_HOST:
+        required: true
+      FTP_USER:
+        required: true
+      FTP_PASSWORD:
+        required: true
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create database dump
+        run: |
+          DAY=$(date +%a)
+          WEEK=$(date +%U)
+          SLOT=$((WEEK % 2))
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          BACKUP_DIR=$DAY-$SLOT
+          BACKUP_NAME=db-backup-$TIMESTAMP.sql
+          ZIP_NAME=db-backup-$TIMESTAMP.zip
+
+          echo "BACKUP_DIR=$BACKUP_DIR" >> $GITHUB_ENV
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+          mysqldump \
+            --no-tablespaces \
+            --single-transaction \
+            --quick \
+            -h "${{ secrets.DB_HOST }}" \
+            -u "${{ secrets.DB_USER }}" \
+            -p"${{ secrets.DB_PASSWORD }}" \
+            "${{ secrets.DB_NAME }}" \
+            > "$BACKUP_NAME"
+
+          zip -q "$ZIP_NAME" "$BACKUP_NAME"
+          rm "$BACKUP_NAME"
+
+      - name: Prepare upload directory
+        run: |
+          mkdir -p upload/${{ env.BACKUP_DIR }}
+          mv "${{ env.ZIP_NAME }}" upload/${{ env.BACKUP_DIR }}/
+
+      - name: Upload backup to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          security: loose
+          local-dir: upload/${{ env.BACKUP_DIR }}/
+          server-dir: ${{ inputs.backup-path }}/${{ env.BACKUP_DIR }}/
+          use-ipv6: false
+          retries: 3
+          retry-delay: 10
