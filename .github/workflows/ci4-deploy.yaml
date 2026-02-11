@@ -9,21 +9,6 @@ on:
       app_base_url:
         required: true
         type: string
-    secrets:
-      DB_HOST:
-        required: true
-      DB_USER:
-        required: true
-      DB_PASSWORD:
-        required: true
-      DB_NAME:
-        required: true
-      FTP_HOST:
-        required: true
-      FTP_USER:
-        required: true
-      FTP_PASSWORD:
-        required: true
 
 jobs:
   deploy:
@@ -43,13 +28,13 @@ jobs:
           database.default.hostname = '${{ secrets.DB_HOST }}'
           database.default.database = '${{ secrets.DB_NAME }}'
           database.default.username = '${{ secrets.DB_USER }}'
-          database.default.password = '${{ secrets.DB_PASS }}'
+          database.default.password = '${{ secrets.DB_PASSWORD }}'
           EOF
 
       - name: 📂 FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
