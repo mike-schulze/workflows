@@ -6,21 +6,6 @@ on:
       backup-path:
         required: true
         type: string
-    secrets:
-      DB_HOST:
-        required: true
-      DB_USER:
-        required: true
-      DB_PASSWORD:
-        required: true
-      DB_NAME:
-        required: true
-      FTP_HOST:
-        required: true
-      FTP_USER:
-        required: true
-      FTP_PASSWORD:
-        required: true
 
 jobs:
   backup:
