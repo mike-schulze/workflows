@@ -6,10 +6,6 @@ on:
       backup-path:
         required: true
         type: string
-      cron-slot:
-        required: false
-        type: string
-        default: auto
     secrets:
       DB_HOST:
         required: true
