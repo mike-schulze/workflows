@@ -73,6 +73,3 @@ jobs:
           security: loose
           local-dir: upload/${{ env.BACKUP_DIR }}/
           server-dir: ${{ inputs.backup-path }}/${{ env.BACKUP_DIR }}/
-          use-ipv6: false
-          retries: 3
-          retry-delay: 10
