@@ -1,0 +1,58 @@
+name: 🚀 Deploy CodeIgniter 4 App
+
+on:
+  workflow_call:
+    inputs:
+      server_dir:
+        required: true
+        type: string
+      app_base_url:
+        required: true
+        type: string
+    secrets:
+      DB_HOST:
+        required: true
+      DB_USER:
+        required: true
+      DB_PASSWORD:
+        required: true
+      DB_NAME:
+        required: true
+      FTP_HOST:
+        required: true
+      FTP_USER:
+        required: true
+      FTP_PASSWORD:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Generate .env
+        run: |
+          cat <<EOF > .env
+          CI_ENVIRONMENT = production
+
+          app.baseURL = '${{ inputs.app_base_url }}'
+
+          database.default.hostname = '${{ secrets.DB_HOST }}'
+          database.default.database = '${{ secrets.DB_NAME }}'
+          database.default.username = '${{ secrets.DB_USER }}'
+          database.default.password = '${{ secrets.DB_PASS }}'
+          EOF
+
+      - name: 📂 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          security: loose
+          local-dir: ./
+          server-dir: ${{ inputs.server_dir }}
