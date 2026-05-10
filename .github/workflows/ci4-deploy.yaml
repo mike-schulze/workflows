@@ -24,6 +24,8 @@ on:
         required: true
       FTP_PASSWORD:
         required: true
+      POSTMARK_API_KEY:
+        required: false
 
 jobs:
   deploy:
@@ -45,6 +47,10 @@ jobs:
           database.default.username = '${{ secrets.DB_USER }}'
           database.default.password = '${{ secrets.DB_PASSWORD }}'
           EOF
+
+          if [ -n "${{ secrets.POSTMARK_API_KEY }}" ]; then
+            echo "postmark.apiKey = '${{ secrets.POSTMARK_API_KEY }}'" >> .env
+          fi
 
       - name: 📂 FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
