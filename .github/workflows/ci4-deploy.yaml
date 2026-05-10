@@ -49,7 +49,7 @@ jobs:
           EOF
 
           if [ -n "${{ secrets.POSTMARK_API_KEY }}" ]; then
-            echo "postmark.apiKey = '${{ secrets.POSTMARK_API_KEY }}'" >> .env
+            echo "POSTMARK_API_KEY = '${{ secrets.POSTMARK_API_KEY }}'" >> .env
           fi
 
       - name: 📂 FTP Deploy
