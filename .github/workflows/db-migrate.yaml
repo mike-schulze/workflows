@@ -1,0 +1,47 @@
+name: 🗄️ CodeIgniter 4 Migrations
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      DB_HOST:
+        required: true
+      DB_USER:
+        required: true
+      DB_PASSWORD:
+        required: true
+      DB_NAME:
+        required: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v5
+
+      - name: ⚙️ Generate .env
+        run: |
+          cat <<EOF > .env
+          CI_ENVIRONMENT = production
+
+          database.default.hostname = '${{ secrets.DB_HOST }}'
+          database.default.database = '${{ secrets.DB_NAME }}'
+          database.default.username = '${{ secrets.DB_USER }}'
+          database.default.password = '${{ secrets.DB_PASSWORD }}'
+          database.default.DBDriver = MySQLi
+          EOF
+
+      - name: 🧰 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql
+          coverage: none
+
+      - name: 📦 Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: 🗄️ Run migrations
+        run: php spark migrate --all --no-interaction
