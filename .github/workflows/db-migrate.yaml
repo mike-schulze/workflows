@@ -5,9 +5,8 @@ on:
   workflow_call:
     inputs:
       environment:
-        required: false
+        required: true
         type: string
-        default: ""
 
     secrets:
       DB_HOST:
@@ -23,8 +22,7 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
 
-    # only attach environment if provided
-    environment: ${{ inputs.environment != '' && inputs.environment || null }}
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: 🚚 Checkout repository
