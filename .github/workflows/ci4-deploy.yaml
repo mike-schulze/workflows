@@ -72,5 +72,4 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
-            **/vendor/codeigniter4/**
             **/vendor/league/**
