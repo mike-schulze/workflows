@@ -68,3 +68,6 @@ jobs:
           security: loose
           local-dir: ./
           server-dir: ${{ inputs.server_dir }}
+          exclude: |
+            **/vendor/**
+            **/app/**
