@@ -7,9 +7,8 @@ on:
         required: true
         type: string
       environment:
-        required: false
+        required: true
         type: string
-        default: ""
 
     secrets:
       DB_HOST:
@@ -31,8 +30,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
 
-    # attach environment only if provided
-    environment: ${{ inputs.environment != '' && inputs.environment || null }}
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: 📦 Create backup dump
