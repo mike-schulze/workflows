@@ -3,7 +3,7 @@ name: 🧯🗄️ Backup CodeIgniter 4 Database
 on:
   workflow_call:
     inputs:
-      backup_path:
+      backup_dir:
         required: true
         type: string
       environment:
@@ -56,4 +56,4 @@ jobs:
           protocol: ftps
           security: loose
           local-dir: ./backup/
-          server-dir: ${{ inputs.backup_path }}
+          server-dir: ${{ inputs.backup_dir }}
