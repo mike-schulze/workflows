@@ -1,11 +1,16 @@
-name: Database Backup (Reusable)
+name: 🧯🗄️ Backup CodeIgniter 4 Database
 
 on:
   workflow_call:
     inputs:
-      backup-path:
+      backup_dir:
         required: true
         type: string
+      environment:
+        required: false
+        type: string
+        default: ""
+
     secrets:
       DB_HOST:
         required: true
@@ -26,40 +31,23 @@ jobs:
   backup:
     runs-on: ubuntu-latest
 
+    # attach environment only if provided
+    environment: ${{ inputs.environment != '' && inputs.environment || null }}
+
     steps:
-      - name: Create database dump
+      - name: 📦 Create backup dump
         run: |
-          DAY=$(date +%a)
-          WEEK=$(date +%U)
-          SLOT=$((10#$WEEK % 2))
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-          BACKUP_DIR=$DAY-$SLOT
-          BACKUP_NAME=db-backup-$TIMESTAMP.sql
-          ZIP_NAME=db-backup-$TIMESTAMP.zip
-
-          echo "BACKUP_DIR=$BACKUP_DIR" >> $GITHUB_ENV
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          mkdir -p backup
 
           mysqldump \
-            --no-tablespaces \
-            --single-transaction \
-            --quick \
             -h "${{ secrets.DB_HOST }}" \
             -u "${{ secrets.DB_USER }}" \
             -p"${{ secrets.DB_PASSWORD }}" \
-            "${{ secrets.DB_NAME }}" \
-            > "$BACKUP_NAME"
+            "${{ secrets.DB_NAME }}" > backup/db_${TIMESTAMP}.sql
 
-          zip -q "$ZIP_NAME" "$BACKUP_NAME"
-          rm "$BACKUP_NAME"
-
-      - name: Prepare upload directory
-        run: |
-          mkdir -p upload/${{ env.BACKUP_DIR }}
-          mv "${{ env.ZIP_NAME }}" upload/${{ env.BACKUP_DIR }}/
-
-      - name: Upload backup to FTP
+      - name: 📂 Upload backup via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -67,5 +55,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           security: loose
-          local-dir: upload/${{ env.BACKUP_DIR }}/
-          server-dir: ${{ inputs.backup-path }}/${{ env.BACKUP_DIR }}/
+          local-dir: ./backup/
+          server-dir: ${{ inputs.backup_dir }}
