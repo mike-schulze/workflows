@@ -69,5 +69,8 @@ jobs:
           local-dir: ./
           server-dir: ${{ inputs.server_dir }}
           exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
             **/vendor/**
             **/app/**
