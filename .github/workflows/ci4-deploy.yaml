@@ -9,6 +9,11 @@ on:
       app_base_url:
         required: true
         type: string
+      environment:
+        required: false
+        type: string
+        default: ""
+
     secrets:
       DB_HOST:
         required: true
@@ -31,6 +36,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # only attach environment if provided
+    environment: ${{ inputs.environment != '' && inputs.environment || null }}
+
     steps:
       - name: 🚚 Checkout
         uses: actions/checkout@v5
@@ -38,7 +46,7 @@ jobs:
       - name: ⚙️ Generate .env
         run: |
           cat <<EOF > .env
-          CI_ENVIRONMENT = production
+          CI_ENVIRONMENT = ${{ inputs.environment != '' && inputs.environment || 'production' }}
 
           app.baseURL = '${{ inputs.app_base_url }}'
 
