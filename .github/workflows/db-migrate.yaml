@@ -1,8 +1,14 @@
-name: 🗄️ CodeIgniter 4 Migrations
+name: 🗄️⚡ CodeIgniter 4 Migrations
 
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: ""
+
     secrets:
       DB_HOST:
         required: true
@@ -17,6 +23,9 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
 
+    # only attach environment if provided
+    environment: ${{ inputs.environment != '' && inputs.environment || null }}
+
     steps:
       - name: 🚚 Checkout repository
         uses: actions/checkout@v5
@@ -24,7 +33,7 @@ jobs:
       - name: ⚙️ Generate .env
         run: |
           cat <<EOF > .env
-          CI_ENVIRONMENT = production
+          CI_ENVIRONMENT = ${{ inputs.environment != '' && inputs.environment || 'production' }}
 
           database.default.hostname = '${{ secrets.DB_HOST }}'
           database.default.database = '${{ secrets.DB_NAME }}'
@@ -46,11 +55,11 @@ jobs:
       - name: 🗄️ Run migrations
         run: |
           set -e
-      
+
           output=$(php spark migrate --all --no-interaction 2>&1)
-      
+
           echo "$output"
-      
+
           if echo "$output" | grep -Ei "(error|exception|failed)"; then
             echo "Migration failed"
             exit 1
