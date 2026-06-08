@@ -40,11 +40,14 @@ jobs:
           mkdir -p backup
 
           mysqldump \
+            --no-tablespaces \
             -h "${{ secrets.DB_HOST }}" \
             -u "${{ secrets.DB_USER }}" \
             -p"${{ secrets.DB_PASSWORD }}" \
-            "${{ secrets.DB_NAME }}" > backup/db_${TIMESTAMP}.sql
+            "${{ secrets.DB_NAME }}" \
+            > backup/db_${TIMESTAMP}.sql
 
+            test -s backup/db_${TIMESTAMP}.sql
       - name: 📂 Upload backup via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
