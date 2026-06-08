@@ -35,19 +35,29 @@ jobs:
     steps:
       - name: 📦 Create backup dump
         run: |
-          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          set -e
 
-          mkdir -p backup
+          DAY=$(date +%a)
+          WEEK=$(date +%U)
+          SLOT=$((10#$WEEK % 2))
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          BACKUP_DIR="backup/${DAY}-${SLOT}"
+          BACKUP_NAME="db-backup-${TIMESTAMP}.sql"
+
+          mkdir -p "$BACKUP_DIR"
 
           mysqldump \
             --no-tablespaces \
+            --single-transaction \
+            --quick \
             -h "${{ secrets.DB_HOST }}" \
             -u "${{ secrets.DB_USER }}" \
             -p"${{ secrets.DB_PASSWORD }}" \
             "${{ secrets.DB_NAME }}" \
-            > backup/db_${TIMESTAMP}.sql
+            > "${BACKUP_DIR}/${BACKUP_NAME}"
 
-            test -s backup/db_${TIMESTAMP}.sql
+            echo "BACKUP_DIR=${BACKUP_DIR}" >> $GITHUB_ENV
       - name: 📂 Upload backup via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -56,5 +66,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           security: loose
-          local-dir: ./backup/
-          server-dir: ${{ inputs.backup-path }}
+          local-dir: ./${{ env.BACKUP_DIR }}/
+          server-dir: ${{ inputs.backup-path }}/${{ env.BACKUP_DIR }}/
+
